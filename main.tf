@@ -6,6 +6,7 @@ locals {
   # vpc
   vpc_id_map = { for name, vpc in tencentcloud_vpc.vpcs: name => vpc.id }
   vpc_multicast_map = { for name, vpc in tencentcloud_vpc.vpcs: name => vpc.is_multicast }
+  vpc_cidr_map = { for name, vpc in tencentcloud_vpc.vpcs: name => vpc.cidr_block }
 
   # nat gateway
   nat_gateways = { for nat in var.nat_gateways: format("%s.%s", nat.vpc_name, nat.nat_name) => nat }
@@ -47,6 +48,17 @@ locals {
         destination_cidr_block = rtb.nat_gateway_destination_cidr_block
         next_hub = local.nat_gateway_id_map[format("%s.%s", rtb.vpc_name, rtb.nat_gateway_name)]
       } if rtb.attach_nat_gateway
+    ]),
+    flatten([
+      for peer in var.vpc_peerings: [
+        for rtb in var.route_tables: {
+          entry_key = format("%s.%s.peer.%s", peer[0], rtb.route_table_name, peer[2])
+          vpc_id = local.vpc_id_map[peer[0]]
+          route_table_id = local.route_table_id_map[format("%s.%s", rtb.vpc_name, rtb.route_table_name)]
+          destination_cidr_block = lookup(local.vpc_cidr_map, peer[1], peer[1])
+          next_hub = peer[2]
+        } if rtb.attach_vpc_peerings && peer[0] == rtb.vpc_name
+      ]
     ])
   )
   rtb_entry_map = { for entry in local.rtb_entry_list: entry.entry_key => entry }
@@ -70,6 +82,15 @@ locals {
         destination_cidr_block = default_rtb.nat_gateway_destination_cidr_block
         next_hub = local.nat_gateway_id_map[format("%s.%s", vpc_name, default_rtb.nat_gateway_name)]
       } if default_rtb.attach_nat_gateway
+    ]),
+    flatten([
+      for peer in var.vpc_peerings: {
+        entry_key = format("%s.default.peer.%s", peer[0], peer[2])
+        vpc_id = local.vpc_id_map[peer[0]]
+        route_table_id = local.default_rtb_map[format("%s.default", peer[0])]
+        destination_cidr_block = lookup(local.vpc_cidr_map, peer[1], peer[1])
+        next_hub = peer[2]
+      } if var.default_route_tables[peer[0]].attach_vpc_peerings
     ])
   )
   default_entry_map = { for entry in local.default_rtb_entry_list: entry.entry_key => entry }

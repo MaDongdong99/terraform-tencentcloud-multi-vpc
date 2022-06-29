@@ -1,3 +1,8 @@
+variable "vpc_peerings" {
+  type = list(list(string))
+  default = []
+}
+
 variable "vpcs" {
   type = map(object({
     vpc_name = string
@@ -25,9 +30,6 @@ variable subnets {
 variable "default_route_tables" {
   type = map(object({
     dest_to_hub = optional(map(string))
-    attach_nat_gateway = optional(bool)
-    nat_gateway_name = optional(string)
-    nat_gateway_destination_cidr_block = optional(string)
     # 目标CIDR           下一跳
     # 自动根据下一跳识别下一跳类型：
     # 如果下一跳：
@@ -36,6 +38,12 @@ variable "default_route_tables" {
     #   以pcx开头，  则下一跳类型为 PEERCONNECTION
     #   以dcg开头，  则下一跳类型为 DIRECTCONNECT
     #   以vpngw开头，则下一跳类型为 VPN
+    attach_nat_gateway = optional(bool)
+    nat_gateway_name = optional(string)
+    nat_gateway_destination_cidr_block = optional(string)
+    attach_vpc_peerings = optional(bool)
+    attach_dcg = optional(bool)
+
   }))
   default = {}
 }
@@ -56,6 +64,8 @@ variable route_tables {
     attach_nat_gateway = optional(bool)
     nat_gateway_name = optional(string) # if attach_nat_gateway is true, this value must be set and exist in nat-gateways
     nat_gateway_destination_cidr_block = optional(string)
+    attach_vpc_peerings = optional(bool)
+    attach_dcg = optional(bool)
   }))
   default = []
 }

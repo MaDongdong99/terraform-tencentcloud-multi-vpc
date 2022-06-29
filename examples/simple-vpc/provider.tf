@@ -1,5 +1,5 @@
 provider "tencentcloud" {
-  region = "ap-hangzhou-ec"
+  region = "ap-guangzhou"
 }
 //+ ap-bangkok         = "Southeast Asia(Bangkok)"
 //+ ap-beijing         = "North China region(Beijing)"

@@ -1,6 +1,13 @@
 
+
 module "vpc" {
   source = "../../"
+
+  vpc_peerings = [
+    ["test-vpc-1", "test-vpc-2", "pcx-prvaaz06"],
+    ["test-vpc-2", "test-vpc-1", "pcx-prvaaz06"],
+
+  ]
 
   vpcs = {
     "test-vpc-1" = {
@@ -32,6 +39,12 @@ module "vpc" {
       attach_nat_gateway = true
       nat_gateway_name = "nat-1"
       nat_gateway_destination_cidr_block = "0.0.0.0/0"
+      attach_vpc_peerings = true
+    }
+    "test-vpc-2" = {
+      dest_to_hub = {}
+      attach_nat_gateway = false
+      attach_vpc_peerings = false
     }
   }
 
@@ -45,6 +58,7 @@ module "vpc" {
       attach_nat_gateway = true
       nat_gateway_name = "nat-1" # if attach_nat_gateway is true, this value must be set and exist in nat-gateways
       nat_gateway_destination_cidr_block = "0.0.0.0/0"
+      attach_vpc_peerings = false
     },
     {
       vpc_name = "test-vpc-2"
@@ -55,6 +69,7 @@ module "vpc" {
       attach_nat_gateway = false
 //      nat_gateway_name = "nat-1" # if attach_nat_gateway is true, this value must be set and exist in nat-gateways
 //      nat_gateway_destination_cidr_block = "0.0.0.0/0"
+      attach_vpc_peerings = true
     }
   ]
 
@@ -64,7 +79,7 @@ module "vpc" {
       subnet_name = "test-subnet-1"
       subnet_cidr = "10.250.1.0/24"
       route_table_name = ""
-      availability_zone = "ap-hangzhou-ec-1"
+      availability_zone = "ap-guangzhou-7"
       subnet_tags = {}
     },
     {
@@ -72,7 +87,7 @@ module "vpc" {
       subnet_name = "test-subnet-2"
       subnet_cidr = "10.250.2.0/24"
       route_table_name = "rtb-1"
-      availability_zone = "ap-hangzhou-ec-1"
+      availability_zone = "ap-guangzhou-6"
       subnet_tags = {}
     }
 
