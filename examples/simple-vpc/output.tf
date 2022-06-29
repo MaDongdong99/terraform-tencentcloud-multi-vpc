@@ -26,3 +26,7 @@ output "default_route_entries" {
 output "route_entries" {
   value = module.vpc.route_entries
 }
+
+output "subnets" {
+  value = module.vpc.subnets
+}

@@ -58,4 +58,24 @@ module "vpc" {
     }
   ]
 
+  subnets = [
+    {
+      vpc_name = "test-vpc-1"
+      subnet_name = "test-subnet-1"
+      subnet_cidr = "10.250.1.0/24"
+      route_table_name = ""
+      availability_zone = "ap-hangzhou-ec-1"
+      subnet_tags = {}
+    },
+    {
+      vpc_name = "test-vpc-1"
+      subnet_name = "test-subnet-2"
+      subnet_cidr = "10.250.2.0/24"
+      route_table_name = "rtb-1"
+      availability_zone = "ap-hangzhou-ec-1"
+      subnet_tags = {}
+    }
+
+  ]
+
 }

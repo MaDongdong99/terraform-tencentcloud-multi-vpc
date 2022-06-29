@@ -2,9 +2,9 @@ output "vpcs" {
   value = local.vpc_id_map
 }
 
-//output "subnets" {
-//  value = local.subnet_name_to_id
-//}
+output "subnets" {
+  value = local.subnet_name_to_id
+}
 
 output "rtbs" {
   value = local.route_table_id_map

@@ -5,6 +5,7 @@ locals {
 
   # vpc
   vpc_id_map = { for name, vpc in tencentcloud_vpc.vpcs: name => vpc.id }
+  vpc_multicast_map = { for name, vpc in tencentcloud_vpc.vpcs: name => vpc.is_multicast }
 
   # nat gateway
   nat_gateways = { for nat in var.nat_gateways: format("%s.%s", nat.vpc_name, nat.nat_name) => nat }
@@ -73,10 +74,10 @@ locals {
   )
   default_entry_map = { for entry in local.default_rtb_entry_list: entry.entry_key => entry }
 
-//  # subnet
-////  subnets = { for subnet in local.s : subnet.subnet_key => subnet }
-////  created_subnets = { for name, subnet in module.subnet: name => subnet.subnet }
-//  subnet_name_to_id = { for subnet in tencentcloud_subnet.subnets: subnet.name => subnet.id }
+  # subnet
+  subnets = { for subnet in var.subnets : format("%s.%s", subnet.vpc_name, subnet.subnet_name) => subnet }
+//  created_subnets = { for name, subnet in module.subnet: name => subnet.subnet }
+  subnet_name_to_id = { for key, subnet in tencentcloud_subnet.subnets: key => subnet.id }
 
 }
 
@@ -136,14 +137,14 @@ resource "tencentcloud_route_table_entry" "defaults" {
   next_hub               = each.value.next_hub
 }
 
-//# subnets
-//resource "tencentcloud_subnet" "subnets" {
-//  count = length(var.subnets)
-//  name              = var.subnets[count.index].subnet_name
-//  vpc_id            = local.vpc_id
-//  cidr_block        = var.subnets[count.index].subnet_cidr
-//  availability_zone = var.subnets[count.index].availability_zone
-//  route_table_id    = var.subnets[count.index].route_table_name == null || var.subnets[count.index].route_table_name == "" || var.subnets[count.index].route_table_name == "default" ? null: local.route_table_name_to_id[var.subnets[count.index].route_table_name]
-//  is_multicast      = local.vpc_is_multicast
-//  tags = merge(var.tags, var.subnets[count.index].tags)
-//}
+# subnets
+resource "tencentcloud_subnet" "subnets" {
+  for_each = local.subnets
+  name              = each.value.subnet_name
+  vpc_id            = local.vpc_id_map[each.value.vpc_name]
+  cidr_block        = each.value.subnet_cidr
+  availability_zone = each.value.availability_zone
+  route_table_id    = each.value.route_table_name == null || each.value.route_table_name == "" || each.value.route_table_name == "default" ? null: local.route_table_id_map[format("%s.%s", each.value.vpc_name, each.value.route_table_name)]
+  is_multicast      = local.vpc_multicast_map[each.value.vpc_name]
+  tags = merge(var.tags, each.value.subnet_tags)
+}
