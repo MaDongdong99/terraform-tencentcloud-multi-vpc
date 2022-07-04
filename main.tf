@@ -100,6 +100,32 @@ locals {
 //  created_subnets = { for name, subnet in module.subnet: name => subnet.subnet }
   subnet_name_to_id = { for key, subnet in tencentcloud_subnet.subnets: key => subnet.id }
 
+  # ccn
+  ccn_attachments_list = flatten([
+    for name, vpcs in var.ccn_attachments: [
+      for vpc in vpcs: {
+        key = format("%s.%s", name, vpc.vpc_name)
+        ccn_name = name
+        vpc_name = vpc.vpc_name
+        vpc_id = vpc.vpc_id
+        vpc_region = vpc.vpc_region
+        ccn_uin = vpc.ccn_uin
+      }
+    ]
+  ])
+  ccn_attachments = {for att in local.ccn_attachments_list: att.key => att }
+  ccn_region_limits_list = flatten([
+    for name, ccn in var.ccns: [
+      for region in ccn.regions: {
+        key = format("%s.%s", name, region)
+        ccn_id = local.ccn_id_map[name]
+        region = region
+        bandwidth_limit = ccn.bandwidth_limit
+      }
+    ]
+  ])
+  ccn_region_limits = {for limit in local.ccn_region_limits_list: limit.key => limit }
+  ccn_id_map = { for name, ccn in tencentcloud_ccn.ccns: name => ccn.id }
 }
 
 # VPC
@@ -168,4 +194,31 @@ resource "tencentcloud_subnet" "subnets" {
   route_table_id    = each.value.route_table_name == null || each.value.route_table_name == "" || each.value.route_table_name == "default" ? null: local.route_table_id_map[format("%s.%s", each.value.vpc_name, each.value.route_table_name)]
   is_multicast      = local.vpc_multicast_map[each.value.vpc_name]
   tags = merge(var.tags, each.value.subnet_tags)
+}
+
+# ccns
+resource "tencentcloud_ccn" "ccns" {
+  for_each = var.ccns
+  name                 = each.key
+  description          = each.value.description
+  qos                  = each.value.qos
+  charge_type          = each.value.charge_type
+  bandwidth_limit_type = each.value.bandwidth_limit_type
+  tags = each.value.tags
+}
+
+resource "tencentcloud_ccn_attachment" "ccn_attachment" {
+  for_each = local.ccn_attachments
+  ccn_id          = local.ccn_id_map[each.value.ccn_name]
+  instance_type   = "VPC"
+  instance_id     = each.value.vpc_id
+  instance_region = each.value.vpc_region
+  ccn_uin = each.value.ccn_uin
+}
+
+resource "tencentcloud_ccn_bandwidth_limit" "ccn_limit" {
+  for_each = local.ccn_region_limits
+  ccn_id          = each.value.ccn_id
+  region          = each.value.region
+  bandwidth_limit = each.value.bandwidth_limit
 }

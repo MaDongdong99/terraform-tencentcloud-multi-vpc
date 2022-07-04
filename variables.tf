@@ -91,3 +91,27 @@ variable "tags" {
   type = map(string)
   default = {}
 }
+
+variable "ccns" {
+  type = map(object({
+    ccn_name = string  // no use
+    description = string
+    qos = string // PT, AU(default), AG
+    charge_type = string // PREPAID, POSTPAID(default)
+    bandwidth_limit_type = string // INTER_REGION_LIMIT, OUTER_REGION_LIMIT(default)
+    regions = optional(list(string))
+    bandwidth_limit = optional(number)
+    tags = optional(map(string))
+  }))
+  default = {}
+}
+
+variable "ccn_attachments" {
+  type = map(list(object({
+      vpc_name = string
+      vpc_id = string
+      vpc_region = string
+      ccn_uin = optional(string)
+    })))
+  default = {}
+}
