@@ -25,3 +25,7 @@ output "default_route_entries" {
 output "route_entries" {
   value = local.rtb_entry_map
 }
+
+output "ccns" {
+  value = local.ccn_id_map
+}

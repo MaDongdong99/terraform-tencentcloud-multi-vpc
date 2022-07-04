@@ -30,3 +30,7 @@ output "route_entries" {
 output "subnets" {
   value = module.vpc.subnets
 }
+
+output "ccns" {
+  value = module.vpc.ccns
+}
