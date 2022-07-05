@@ -105,6 +105,7 @@ locals {
     for name, vpcs in var.ccn_attachments: [
       for vpc in vpcs: {
         key = format("%s.%s", name, vpc.vpc_name)
+        ccn_id = lookup(local.ccn_id_map, name, name)
         ccn_name = name
         vpc_name = vpc.vpc_name
         vpc_id = vpc.vpc_id
@@ -209,7 +210,7 @@ resource "tencentcloud_ccn" "ccns" {
 
 resource "tencentcloud_ccn_attachment" "ccn_attachment" {
   for_each = local.ccn_attachments
-  ccn_id          = local.ccn_id_map[each.value.ccn_name]
+  ccn_id          = each.value.ccn_id
   instance_type   = "VPC"
   instance_id     = each.value.vpc_id
   instance_region = each.value.vpc_region
