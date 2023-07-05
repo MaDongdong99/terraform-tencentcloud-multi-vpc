@@ -6,6 +6,10 @@ output "subnets" {
   value = local.subnet_name_to_id
 }
 
+output "subnet_azs" {
+  value = local.subnet_name_to_az
+}
+
 output "rtbs" {
   value = local.route_table_id_map
 }

@@ -99,6 +99,7 @@ locals {
   subnets = { for subnet in var.subnets : format("%s.%s", subnet.vpc_name, subnet.subnet_name) => subnet }
 //  created_subnets = { for name, subnet in module.subnet: name => subnet.subnet }
   subnet_name_to_id = { for key, subnet in tencentcloud_subnet.subnets: key => subnet.id }
+  subnet_name_to_az = { for key, subnet in tencentcloud_subnet.subnets: key => subnet.availability_zone }
 
   # ccn
   ccn_attachments_list = flatten([
