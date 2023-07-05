@@ -3,7 +3,6 @@ locals {
   # global
   tags = var.tags
 
-  default_vpc = [ for vpc_name, vpc in var.vpcs: vpc][0]
   # vpc
   vpc_id_map = { for name, vpc in tencentcloud_vpc.vpcs: name => vpc.id }
   vpc_multicast_map = { for name, vpc in tencentcloud_vpc.vpcs: name => vpc.is_multicast }
@@ -134,10 +133,10 @@ locals {
 resource "tencentcloud_vpc" "vpcs" {
   for_each     = var.vpcs
   name         = each.key
-  cidr_block   = lookup(each.value, "vpc_cidr")
-  is_multicast = lookup(each.value, "vpc_is_multicast", false)
-  dns_servers  = lookup(each.value, "vpc_dns_servers", null)
-  tags         = merge(var.tags, lookup(each.value, "vpc_tags", {}))
+  cidr_block   = each.value.vpc_cidr
+  is_multicast = each.value.vpc_is_multicast == null ? false : each.value.vpc_is_multicast
+  dns_servers  = each.value.vpc_dns_servers
+  tags         = merge(var.tags, each.value.vpc_tags)
 }
 
 

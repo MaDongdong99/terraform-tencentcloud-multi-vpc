@@ -3,11 +3,11 @@
 module "vpc" {
   source = "../../"
 
-  vpc_peerings = [
-    ["test-vpc-1", "test-vpc-2", "pcx-prvaaz06"],
-    ["test-vpc-2", "test-vpc-1", "pcx-prvaaz06"],
-
-  ]
+//  vpc_peerings = [
+//    ["test-vpc-1", "test-vpc-2", "pcx-prvaaz06"],
+//    ["test-vpc-2", "test-vpc-1", "pcx-prvaaz06"],
+//
+//  ]
 
   vpcs = {
     "test-vpc-1" = {
@@ -24,10 +24,12 @@ module "vpc" {
     {
       vpc_name = "test-vpc-1"
       nat_name = "nat-1"
-      eips = [{
-        internet_max_bandwidth_out = 10
-        internet_service_provider = "CMCC"
-      }]
+      eips = {
+        "epi1" = {
+          internet_max_bandwidth_out = 10
+          internet_service_provider = "CMCC"
+        }
+      }
     }
   ]
 

@@ -4,20 +4,19 @@ variable "vpc_peerings" {
 }
 
 variable "vpcs" {
-  type = map(map(any))
-//  type = map(object({
-//    vpc_name = string
-//    vpc_cidr = string
-//    vpc_is_multicast = optional(bool)
-//    vpc_dns_servers = optional(list(string))
-//    vpc_tags = optional(map(string))
-//  }))
+  type = map(object({
+    vpc_name = string
+    vpc_cidr = string
+    vpc_is_multicast = optional(bool)
+    vpc_dns_servers = optional(list(string))
+    vpc_tags = optional(map(string))
+  }))
   default = {}
 }
 
 variable subnets {
   type = list(object({
-    vpc_name = string
+    vpc_name = optional(string)
     subnet_name = string
     subnet_cidr = string
     route_table_name = optional(string)
@@ -51,9 +50,9 @@ variable "default_route_tables" {
 
 variable route_tables {
   type = list(object({
-    vpc_name = string
+    vpc_name = optional(string)
     route_table_name = string
-    dest_to_hub = map(string)
+    dest_to_hub = optional(map(string))
     # 目标CIDR           下一跳
     # 自动根据下一跳识别下一跳类型：
     # 如果下一跳：
@@ -74,11 +73,11 @@ variable route_tables {
 # nat gateway
 variable nat_gateways {
   type = list(object({
-    vpc_name = string
+    vpc_name = optional(string)
     nat_name = string
     bandwidth = optional(number)
     max_concurrent = optional(number)
-    eips = list(object({
+    eips = map(object({
       internet_charge_type = optional(string)
       internet_max_bandwidth_out = optional(number)
       internet_service_provider = optional(string)

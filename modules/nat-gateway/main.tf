@@ -1,13 +1,13 @@
 locals {
-  assigned_eip_set = [ for eip in tencentcloud_eip.eips : eip.public_ip]
+  assigned_eip_set = [ for name, eip in tencentcloud_eip.eips : eip.public_ip]
 }
 
 resource "tencentcloud_eip" "eips" {
-  count                      = length(var.eips)
-  internet_charge_type       = var.eips[count.index].internet_charge_type
-  internet_max_bandwidth_out = var.eips[count.index].internet_max_bandwidth_out
+  for_each                   = var.eips
+  internet_charge_type       = each.value.internet_charge_type
+  internet_max_bandwidth_out = each.value.internet_max_bandwidth_out
   type                       = "EIP"
-  internet_service_provider = var.eips[count.index].internet_service_provider
+  internet_service_provider = each.value.internet_service_provider
   tags = var.tags
 }
 
