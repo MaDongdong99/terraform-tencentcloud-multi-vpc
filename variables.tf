@@ -4,13 +4,14 @@ variable "vpc_peerings" {
 }
 
 variable "vpcs" {
-  type = map(object({
-    vpc_name = string
-    vpc_cidr = string
-    vpc_is_multicast = optional(bool)
-    vpc_dns_servers = optional(list(string))
-    vpc_tags = optional(map(string))
-  }))
+  type = map(map(any))
+//  type = map(object({
+//    vpc_name = string
+//    vpc_cidr = string
+//    vpc_is_multicast = optional(bool)
+//    vpc_dns_servers = optional(list(string))
+//    vpc_tags = optional(map(string))
+//  }))
   default = {}
 }
 
