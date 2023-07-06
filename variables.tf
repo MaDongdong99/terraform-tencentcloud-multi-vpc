@@ -116,3 +116,25 @@ variable "ccn_attachments" {
     })))
   default = {}
 }
+
+variable "inregion_ccns" {    // inregion_ccns which is only connect vpcs in a same region, so that we do not need to know vpc id
+  type = map(object({
+    ccn_name = string  // no use
+    description = string
+    qos = string // PT, AU(default), AG
+    charge_type = string // PREPAID, POSTPAID(default)
+    bandwidth_limit_type = string // INTER_REGION_LIMIT, OUTER_REGION_LIMIT(default)
+    regions = optional(list(string))
+    bandwidth_limit = optional(number)
+    tags = optional(map(string))
+  }))
+  default = {}
+}
+
+variable "inregion_ccn_attachments" {
+  type = map(list(object({
+    vpc_name = string
+    vpc_region = string
+  })))
+  default = {}
+}

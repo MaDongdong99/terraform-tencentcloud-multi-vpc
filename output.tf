@@ -33,3 +33,7 @@ output "route_entries" {
 output "ccns" {
   value = local.ccn_id_map
 }
+
+output "inregion_ccns" {
+  value = local.inregion_ccn_id_map
+}
