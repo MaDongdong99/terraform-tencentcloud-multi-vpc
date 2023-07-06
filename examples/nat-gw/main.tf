@@ -18,10 +18,16 @@ module "vpc" {
       eips = {
         "eip1": {
           internet_charge_type = "TRAFFIC_POSTPAID_BY_HOUR"
+          internet_max_bandwidth_out = 100
+          internet_service_provider = "BGP"
+        },
+        "eip2": {
           internet_max_bandwidth_out = 158
           internet_service_provider = "BGP"
+          bandwidth_package_id = "bwp-gm19rlk4"
         }
       }
+
     }
   ]
 

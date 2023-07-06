@@ -13,9 +13,11 @@ locals {
     for nat in var.nat_gateways: [
       for eip_name, eip in nat.eips: {
         k = format("%s.%s.%s", nat.vpc_name, nat.nat_name, eip_name)
-        internet_charge_type = eip.internet_charge_type
+        name = eip_name
+        internet_charge_type = eip.bandwidth_package_id == null ? eip.internet_charge_type : "BANDWIDTH_PACKAGE"
         internet_max_bandwidth_out = eip.internet_max_bandwidth_out
         internet_service_provider = eip.internet_service_provider
+        bandwidth_package_id = eip.bandwidth_package_id
       }
     ]
   ])
@@ -157,10 +159,12 @@ resource "tencentcloud_vpc" "vpcs" {
 # Nat Gateway
 resource "tencentcloud_eip" "eips" {
   for_each                   = local.eip_map
+  name = each.value.name
   internet_charge_type       = each.value.internet_charge_type
   internet_max_bandwidth_out = each.value.internet_max_bandwidth_out
   type                       = "EIP"
   internet_service_provider = each.value.internet_service_provider
+  bandwidth_package_id = each.value.bandwidth_package_id
   tags = var.tags
 }
 

@@ -81,6 +81,7 @@ variable nat_gateways {
       internet_charge_type = optional(string)
       internet_max_bandwidth_out = optional(number)
       internet_service_provider = optional(string)
+      bandwidth_package_id = optional(string)
     }))
     tags = optional(map(string))
   }))

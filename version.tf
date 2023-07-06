@@ -1,6 +1,5 @@
 terraform {
-  required_version = ">=1.0.9"
-  experiments = [ module_variable_optional_attrs ]
+  required_version = ">=1.5.0"
   required_providers {
     tencentcloud = {
       source  = "tencentcloudstack/tencentcloud"
