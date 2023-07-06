@@ -15,11 +15,13 @@ module "vpc" {
       nat_name = "nat-1"
       bandwidth=100,
       max_concurrent=1000000
-      eips = [{
-        internet_charge_type = "TRAFFIC_POSTPAID_BY_HOUR"
-        internet_max_bandwidth_out = 158
-        internet_service_provider = "BGP"
-      }]
+      eips = {
+        "eip1": {
+          internet_charge_type = "TRAFFIC_POSTPAID_BY_HOUR"
+          internet_max_bandwidth_out = 158
+          internet_service_provider = "BGP"
+        }
+      }
     }
   ]
 

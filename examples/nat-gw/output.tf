@@ -30,7 +30,3 @@ output "route_entries" {
 output "subnets" {
   value = module.vpc.subnets
 }
-
-output "nat_input" {
-  value = module.vpc.nat_input
-}

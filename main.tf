@@ -9,8 +9,21 @@ locals {
   vpc_cidr_map = { for name, vpc in tencentcloud_vpc.vpcs: name => vpc.cidr_block }
 
   # nat gateway
+  eips = flatten([
+    for nat in var.nat_gateways: [
+      for eip_name, eip in nat.eips: {
+        k = format("%s.%s.%s", nat.vpc_name, nat.nat_name, eip_name)
+        internet_charge_type = eip.internet_charge_type
+        internet_max_bandwidth_out = eip.internet_max_bandwidth_out
+        internet_service_provider = eip.internet_service_provider
+      }
+    ]
+  ])
+  eip_map = { for eip in local.eips : eip.k => eip }
+  nat_gateway_eips = { for nat in var.nat_gateways: format("%s.%s", nat.vpc_name, nat.nat_name) => [ for eip_name, eip in nat.eips: format("%s.%s.%s", nat.vpc_name, nat.nat_name, eip_name) ]  }
+  nat_gateway_eip_ips = { for nat_name, eip_names in local.nat_gateway_eips: nat_name => [ for eip_name in eip_names: tencentcloud_eip.eips[eip_name].public_ip ]  }
   nat_gateways = { for nat in var.nat_gateways: format("%s.%s", nat.vpc_name, nat.nat_name) => nat }
-  nat_gateway_id_map = { for key, nat in module.nats: key => nat.nat_id }
+  nat_gateway_id_map = { for key, nat in tencentcloud_nat_gateway.nat: key => nat.id }
 
   # default route table
   default_rtb_map = { for vpc_name, default_rtb in data.tencentcloud_vpc_route_tables.default_rtbs:  format("%s.default", vpc_name) => default_rtb.instance_list[0].route_table_id }
@@ -142,17 +155,37 @@ resource "tencentcloud_vpc" "vpcs" {
 
 
 # Nat Gateway
-module "nats" {
-  for_each = local.nat_gateways
-  source = "./modules/nat-gateway"
-
-  vpc_id = local.vpc_id_map[each.value.vpc_name]
-  name = each.value.nat_name
-  bandwidth = each.value.bandwidth
-  max_concurrent = each.value.max_concurrent
-  eips = each.value.eips
-  tags = merge(var.tags, each.value.tags)
+resource "tencentcloud_eip" "eips" {
+  for_each                   = local.eip_map
+  internet_charge_type       = each.value.internet_charge_type
+  internet_max_bandwidth_out = each.value.internet_max_bandwidth_out
+  type                       = "EIP"
+  internet_service_provider = each.value.internet_service_provider
+  tags = var.tags
 }
+
+resource "tencentcloud_nat_gateway" "nat" {
+  for_each = local.nat_gateways
+  name             = each.value.nat_name
+  vpc_id           = local.vpc_id_map[each.value.vpc_name]
+  bandwidth        = each.value.bandwidth
+  max_concurrent   = each.value.max_concurrent
+  assigned_eip_set = local.nat_gateway_eip_ips[format("%s.%s", each.value.vpc_name, each.value.nat_name)]
+
+  tags = var.tags
+}
+
+//module "nats" {
+//  for_each = local.nat_gateways
+//  source = "./modules/nat-gateway"
+//
+//  vpc_id = local.vpc_id_map[each.value.vpc_name]
+//  name = each.value.nat_name
+//  bandwidth = each.value.bandwidth
+//  max_concurrent = each.value.max_concurrent
+//  eips = each.value.eips
+//  tags = merge(var.tags, each.value.tags)
+//}
 
 # route tables
 resource "tencentcloud_route_table" "rtbs" {
